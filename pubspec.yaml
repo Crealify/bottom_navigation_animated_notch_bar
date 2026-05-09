@@ -16,3 +16,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+
+
+assets:
+  assets/bottom_navigation_animated_notch_bar.png

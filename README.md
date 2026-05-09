@@ -18,8 +18,10 @@
 ## Live Action: Smooth, Dynamic Navigation
 A fluid, modern navigation experience to keep your users engaged. 
 
-![Notch Bar Full Demo](https://raw.githubusercontent.com/Crealify/bottom_navigation_animated_notch_bar/main/doc/demo.gif)
+![Lifecycle Guard Full Demo](https://raw.githubusercontent.com/Crealify/bottom_navigation_animated_notch_bar/doc/bottom_navigation_animated_notch_bar.gif)
 
+### Try the Interactive Demos:
+*   [**Try Android | Ios | web Demo**](https://htmlpreview.github.io/?https://github.com/Crealify/bottom_navigation_animated_notch_bar/doc/demoandroid.html) - See Foreground Service protection.
 ---
 
 ## Why bottom_navigation_animated_notch_bar?

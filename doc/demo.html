@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Animated Notch Bottom Bar – Live Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#12121f;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:50px 20px 80px}
+
+    /* HERO */
+    .hero{text-align:center;max-width:680px;margin-bottom:60px}
+    .badge{display:inline-block;background:rgba(0,229,255,.1);color:#00E5FF;border:1px solid rgba(0,229,255,.3);border-radius:30px;padding:5px 18px;font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px}
+    h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;background:linear-gradient(135deg,#00E5FF,#FF4D8D);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;margin-bottom:14px}
+    .hero p{color:#6b7098;font-size:1rem;line-height:1.8}
+
+    /* SHOWCASE ROW */
+    .showcase{display:flex;align-items:flex-end;justify-content:center;gap:44px;flex-wrap:wrap}
+    .device-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+    .device-tag{font-size:.7rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#00E5FF;text-shadow:0 0 12px rgba(0,229,255,.6)}
+
+    /* PHONE SHELL */
+    .phone{position:relative;flex-shrink:0;border-radius:40px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08);transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s}
+    .phone:hover{transform:translateY(-10px);box-shadow:0 44px 80px rgba(0,229,255,.2),0 0 0 1.5px rgba(0,229,255,.35)}
+
+    /* Android */
+    .phone.android{width:380px;height:620px;border:10px solid #1e1e1e;border-top-width:32px;border-bottom-width:32px;border-radius:36px}
+    .phone.android::before{content:'';position:absolute;top:-21px;left:50%;transform:translateX(-50%);width:10px;height:10px;background:#333;border-radius:50%;z-index:30}
+
+    /* iOS */
+    .phone.ios{width:380px;height:640px;border:12px solid #2a2a2a;border-radius:50px}
+    .phone.ios::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#000;border-bottom-left-radius:18px;border-bottom-right-radius:18px;z-index:30}
+
+    /* BROWSER */
+    .browser{flex-shrink:0;width:560px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#1e2035;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08);transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s;display:flex;flex-direction:column}
+    .browser:hover{transform:translateY(-10px);box-shadow:0 44px 80px rgba(0,229,255,.2),0 0 0 1.5px rgba(0,229,255,.35)}
+    .browser-chrome{height:38px;background:#252840;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;padding:0 14px;gap:7px;flex-shrink:0}
+    .bdot{width:11px;height:11px;border-radius:50%}
+    .bdot.r{background:#ff5f56}.bdot.y{background:#ffbd2e}.bdot.g{background:#27c93f}
+    .url-bar{flex:1;margin:0 10px;height:21px;background:rgba(0,0,0,.35);border-radius:5px;display:flex;align-items:center;padding:0 9px;font-size:.6rem;color:#6b7098;font-family:monospace;overflow:hidden;white-space:nowrap}
+    .browser-body{position:relative;overflow:hidden;flex:1}
+
+    /* SCREEN */
+    .screen{width:100%;height:100%;background:#1A1A29;display:flex;flex-direction:column;position:relative}
+    .phone.android .screen{height:556px} /* 620 - 32 - 32 */
+    .phone.ios .screen{height:616px}     /* 640 - 12 - 12 */
+    .browser .screen{height:400px}
+
+    /* PAGE CARD (mirrors _PlaceholderPage) */
+    .page-card{flex:1;margin:16px 16px 0;border-radius:20px;border:1px solid;display:flex;align-items:center;justify-content:center;transition:background .5s,border-color .5s}
+    .page-card span{font-size:1.2rem;font-weight:700;transition:color .5s}
+
+    /* BAR WRAPPER */
+    .bar-wrap{position:relative;width:100%;overflow:visible;flex-shrink:0}
+
+    /* CANVAS (bar drawn here) */
+    .notch-canvas{display:block}
+
+    /* FLOATING CIRCLE */
+    .notch-circle{
+      position:absolute;
+      top:-25px;
+      width:56px;height:56px;
+      border-radius:50%;
+      background:#151521;
+      border:2px solid #00E5FF;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 0 16px rgba(0,229,255,.5);
+      z-index:20;
+      pointer-events:none;
+      transition:left .35s cubic-bezier(.4,0,.2,1);
+      animation:breathe 2s ease-in-out infinite;
+    }
+    .notch-circle .mi{font-size:22px;color:#00E5FF;animation:breathe-icon 2s ease-in-out infinite}
+    @keyframes breathe{
+      0%,100%{border-color:#00E5FF;box-shadow:0 0 18px rgba(0,229,255,.55)}
+      50%     {border-color:#fff;   box-shadow:0 0 18px rgba(255,255,255,.45)}
+    }
+    @keyframes breathe-icon{0%,100%{color:#00E5FF}50%{color:#fff}}
+
+    /* NAV ROW (overlays canvas) */
+    .nav-row{position:absolute;bottom:0;left:0;right:0;display:flex;height:72px}
+    .nav-btn{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+      padding-bottom:10px;gap:2px;cursor:pointer;border:none;background:transparent;
+      -webkit-tap-highlight-color:transparent;min-width:0;
+    }
+    .nav-btn .n-icon{font-size:22px;line-height:1;color:rgba(255,255,255,.45);display:block;transition:opacity .25s}
+    .nav-btn .n-lbl{font-size:9.5px;font-weight:600;color:#808080;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;transition:opacity .25s}
+    .nav-btn.active .n-icon,.nav-btn.active .n-lbl{opacity:0}
+
+    /* FOOTER */
+    footer{margin-top:60px;text-align:center;color:#6b7098;font-size:.85rem;border-top:1px solid rgba(255,255,255,.06);padding-top:30px;width:100%;max-width:800px}
+    footer a{color:#00E5FF;text-decoration:none}
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="badge">Interactive Live Demo</div>
+  <h1>Animated Notch Bottom Bar</h1>
+  <p>One Flutter package. Every platform. The same fluid, glowing notch animation — pixel‑perfect on <strong style="color:#fff">Android</strong>, <strong style="color:#fff">iOS</strong> &amp; <strong style="color:#fff">Web</strong>.</p>
+</header>
+
+<div class="showcase">
+
+  <!-- ANDROID -->
+  <div class="device-wrap">
+    <span class="device-tag">Android</span>
+    <div class="phone android">
+      <div class="screen" id="scr-a">
+        <div class="page-card" id="card-a"><span id="ctitle-a">Home View</span></div>
+        <div class="bar-wrap" id="bwrap-a">
+          <div class="notch-circle" id="circle-a"><span class="material-icons mi" id="cicon-a">home</span></div>
+          <canvas id="canvas-a" height="72"></canvas>
+          <div class="nav-row" id="nav-a"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEB / DESKTOP -->
+  <div class="device-wrap">
+    <span class="device-tag">Web / Desktop</span>
+    <div class="browser">
+      <div class="browser-chrome">
+        <div class="bdot r"></div><div class="bdot y"></div><div class="bdot g"></div>
+        <div class="url-bar">pub.dev/packages/bottom_navigation_animated_notch_bar</div>
+      </div>
+      <div class="browser-body">
+        <div class="screen" id="scr-w">
+          <div class="page-card" id="card-w"><span id="ctitle-w">Home View</span></div>
+          <div class="bar-wrap" id="bwrap-w">
+            <div class="notch-circle" id="circle-w"><span class="material-icons mi" id="cicon-w">home</span></div>
+            <canvas id="canvas-w" height="72"></canvas>
+            <div class="nav-row" id="nav-w"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS -->
+  <div class="device-wrap">
+    <span class="device-tag">iOS</span>
+    <div class="phone ios">
+      <div class="screen" id="scr-i">
+        <div class="page-card" id="card-i"><span id="ctitle-i">Home View</span></div>
+        <div class="bar-wrap" id="bwrap-i">
+          <div class="notch-circle" id="circle-i"><span class="material-icons mi" id="cicon-i">home</span></div>
+          <canvas id="canvas-i" height="72"></canvas>
+          <div class="nav-row" id="nav-i"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Made with ❤️ by <a href="https://github.com/Crealify" target="_blank">Crealify</a> · <a href="https://pub.dev/packages/bottom_navigation_animated_notch_bar" target="_blank">View on pub.dev</a></p>
+</footer>
+
+<script>
+// ── TAB CONFIG (mirrors Flutter example exactly) ────────────────────────────
+const TABS = [
+  { label:'Home',      inactive:'home',           active:'home',        color:'#448AFF' },
+  { label:'Search',    inactive:'search',          active:'search',      color:'#69F0AE' },
+  { label:'Favorites', inactive:'favorite_border', active:'favorite',    color:'#FFAB40' },
+  { label:'Settings',  inactive:'settings',        active:'settings',    color:'#E040FB' },
+  { label:'Profile',   inactive:'person_outline',  active:'person',      color:'#FF5252' },
+];
+
+// ── EXACT VALUES FROM DART CODE ─────────────────────────────────────────────
+const BAR_COLOR  = '#2A2D3E';  // AppConstants.cardColor
+const NOTCH_R    = 34;         // notchRadius (normal screen)
+const CIRCLE_R   = 28;         // circleRadius
+const CIRCLE_D   = 56;         // notchSize = circleRadius * 2
+const CIRCLE_TOP = -25;        // top offset from bar
+const BAR_H      = 72;
+const CORNER_R   = 20;         // bar border-radius
+
+// ── DEVICES ─────────────────────────────────────────────────────────────────
+const DEVS = ['a','w','i'];
+
+// ── NOTCH PAINTER (exact port of NotchPainter.dart) ─────────────────────────
+function paintNotch(canvas, barW, notchPos) {
+  canvas.width  = barW;
+  canvas.height = BAR_H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, barW, BAR_H);
+
+  const notchWidth = NOTCH_R * 3.5;
+  const sn = notchPos - notchWidth / 2;  // startNotch
+  const en = notchPos + notchWidth / 2;  // endNotch
+  const nd = NOTCH_R * 1.2;              // notchDepth
+
+  // Draw shadow underneath
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur  = 20;
+  ctx.shadowOffsetY = -3;
+  ctx.fillStyle = BAR_COLOR;
+
+  ctx.beginPath();
+  // top-left rounded corner
+  ctx.moveTo(CORNER_R, 0);
+  // top edge → start of notch
+  ctx.lineTo(sn, 0);
+  // notch bezier DOWN (cubic, mirrors Flutter cubicTo)
+  ctx.bezierCurveTo(
+    sn + notchWidth * 0.2, 0,
+    notchPos - NOTCH_R * 0.8, nd,
+    notchPos, nd
+  );
+  // notch bezier UP (back out)
+  ctx.bezierCurveTo(
+    notchPos + NOTCH_R * 0.8, nd,
+    en - notchWidth * 0.2, 0,
+    en, 0
+  );
+  // top edge → top-right corner
+  ctx.lineTo(barW - CORNER_R, 0);
+  ctx.arcTo(barW, 0, barW, CORNER_R, CORNER_R);
+  // right edge → bottom-right corner
+  ctx.lineTo(barW, BAR_H - CORNER_R);
+  ctx.arcTo(barW, BAR_H, barW - CORNER_R, BAR_H, CORNER_R);
+  // bottom edge → bottom-left corner
+  ctx.lineTo(CORNER_R, BAR_H);
+  ctx.arcTo(0, BAR_H, 0, BAR_H - CORNER_R, CORNER_R);
+  // left edge → top-left corner
+  ctx.lineTo(0, CORNER_R);
+  ctx.arcTo(0, 0, CORNER_R, 0, CORNER_R);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // Subtle top border
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(CORNER_R, 0); ctx.lineTo(sn, 0);
+  ctx.moveTo(en, 0); ctx.lineTo(barW - CORNER_R, 0);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ── BUILD NAV BUTTONS ────────────────────────────────────────────────────────
+function buildNav(id) {
+  const row = document.getElementById('nav-'+id);
+  row.innerHTML = '';
+  TABS.forEach((tab, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn' + (i === 0 ? ' active' : '');
+    btn.id = `nb-${id}-${i}`;
+    btn.innerHTML = `
+      <span class="material-icons-outlined n-icon">${tab.inactive}</span>
+      <span class="n-lbl">${tab.label}</span>`;
+    btn.addEventListener('click', () => userClick(i));
+    row.appendChild(btn);
+  });
+}
+
+// ── ANIMATION STATE ──────────────────────────────────────────────────────────
+let curIdx   = 0;
+let fromFrac = 0;
+let animT    = 1;   // 0→1, 1=idle
+let animMs   = null;
+const DUR    = 350;
+
+function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+function currentFrac() {
+  if (animT >= 1) return curIdx;
+  return fromFrac + (curIdx - fromFrac) * easeOutCubic(animT);
+}
+
+function userClick(idx) {
+  if (idx === curIdx && animT >= 1) return;
+  stopAuto();
+  triggerMove(idx);
+  scheduleAuto(4000);
+}
+
+function triggerMove(idx) {
+  fromFrac = currentFrac();
+  curIdx   = idx;
+  animT    = 0;
+  animMs   = null;
+  requestAnimationFrame(tick);
+}
+
+function tick(ts) {
+  if (animMs === null) animMs = ts;
+  animT = Math.min((ts - animMs) / DUR, 1);
+  render();
+  if (animT < 1) requestAnimationFrame(tick);
+}
+
+// ── RENDER ALL DEVICES ───────────────────────────────────────────────────────
+function render() {
+  const frac = currentFrac();
+
+  DEVS.forEach(id => {
+    const canvas  = document.getElementById('canvas-'+id);
+    const barW = canvas.parentElement.getBoundingClientRect().width;
+    if (!barW || barW < 50) return;
+
+    const itemW   = barW / TABS.length;
+    const notchPos = frac * itemW + itemW / 2;
+
+    // Draw bar
+    paintNotch(canvas, barW, notchPos);
+    // Set canvas display size to match
+    canvas.style.width  = barW + 'px';
+    canvas.style.height = BAR_H + 'px';
+
+    // Position floating circle
+    const circle = document.getElementById('circle-'+id);
+    circle.style.left = (notchPos - CIRCLE_R) + 'px';
+
+    // Update active icon in circle
+    document.getElementById('cicon-'+id).textContent = TABS[curIdx].active;
+
+    // Update nav buttons
+    TABS.forEach((_, i) => {
+      const btn = document.getElementById(`nb-${id}-${i}`);
+      if (btn) btn.className = 'nav-btn' + (i === curIdx ? ' active' : '');
+    });
+
+    // Page card color (mirrors _PlaceholderPage)
+    const hex = TABS[curIdx].color;
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    const card  = document.getElementById('card-'+id);
+    card.style.background   = `rgba(${r},${g},${b},0.1)`;
+    card.style.borderColor  = `rgba(${r},${g},${b},0.5)`;
+    const title = document.getElementById('ctitle-'+id);
+    title.style.color       = hex;
+    title.style.fontSize    = '1.15rem';
+    title.style.fontWeight  = '700';
+    title.textContent       = TABS[curIdx].label + ' View';
+  });
+}
+
+// ── AUTO-CYCLE ────────────────────────────────────────────────────────────────
+let autoHandle = null;
+function startAuto() {
+  autoHandle = setInterval(() => triggerMove((curIdx+1) % TABS.length), 2000);
+}
+function stopAuto()  { clearInterval(autoHandle); autoHandle = null; }
+function scheduleAuto(ms) { setTimeout(startAuto, ms); }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  DEVS.forEach(id => buildNav(id));
+  // Initial render after layout
+  requestAnimationFrame(() => { render(); scheduleAuto(1200); });
+  // Re-render on resize
+  window.addEventListener('resize', render);
+});
+</script>
+</body>
+</html>
