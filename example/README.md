@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Crealify/bottom_navigation_animated_notch_bar/main/assets/bottom_navigation_animated_notch_bar.png" width="200" alt="Animated Notch Bar Logo">
+<img src="https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/assets/bottom_navigation_animated_notch_bar.png" width="200" alt="Animated Notch Bar Logo">
 
 # bottom_navigation_animated_notch_bar
 
@@ -19,10 +19,10 @@
 
 A fluid, modern navigation experience to keep your users engaged.
 
-![Notch Bar Full Demo](https://raw.githubusercontent.com/Crealify/bottom_navigation_animated_notch_bar/main/doc/bottom_navigation_animated_notch_bar.gif)
+![Notch Bar Full Demo](https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/bottom_navigation_animated_notch_bar.gif)
 
 ### Try the Interactive Demo:
-* [**Try Android | iOS | Web Demo**](https://htmlpreview.github.io/?https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/main/doc/demo.html) — See the live animated notch bar across all platforms.
+* [**Try Android | iOS | Web Demo**](https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/demo.html) — See the live animated notch bar across all platforms.
 
 ---
 
