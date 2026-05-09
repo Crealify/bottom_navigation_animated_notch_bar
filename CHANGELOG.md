@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Updated package logo and demo GIF in README.
+* Minor documentation improvements.
+
 ## 1.0.0
 
 * Initial release of `bottom_navigation_animated_notch_bar`.

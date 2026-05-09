@@ -7,7 +7,7 @@
 **A uniquely designed, highly customizable animated notch bottom navigation bar for Flutter.**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Crealify-181717?logo=github)](https://github.com/Crealify/bottom_navigation_animated_notch_bar)
-[![pub version](https://img.shields.io/badge/pub-v1.0.0-blue?logo=dart)](https://pub.dev/packages/bottom_navigation_animated_notch_bar)
+[![pub version](https://img.shields.io/badge/pub-v1.0.1-blue?logo=dart)](https://pub.dev/packages/bottom_navigation_animated_notch_bar)
 [![License: BSD-3](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/main/LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-green)](#cross-platform-support)
 
