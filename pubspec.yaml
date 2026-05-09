@@ -1,0 +1,18 @@
+name: bottom_navigation_animated_notch_bar
+description: "A uniquely designed, highly customizable animated notch bottom navigation bar for Flutter."
+version: 0.0.1
+homepage: "https://github.com/crealify/bottom_navigation_animated_notch_bar"
+
+environment:
+  sdk: ^3.2.0
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_animate: ^4.2.0+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0

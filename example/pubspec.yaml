@@ -1,0 +1,26 @@
+name: example
+description: "Demonstrates how to use the bottom_navigation_animated_notch_bar plugin."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.2.0
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  bottom_navigation_animated_notch_bar:
+    path: ../
+  get: ^4.6.6
+  url_launcher: ^6.2.1
+  flutter_animate: ^4.2.0+1
+  visibility_detector: ^0.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
