@@ -21,7 +21,7 @@ A fluid, modern navigation experience to keep your users engaged.
 ![Animated Notch Bar Full Demo](https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/bottom_navigation_animated_notch_bar.gif)
 
 ### Try the Interactive Demos:
-*   [**Try Android | Ios | web Demo**](https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/demo.html) - See Foreground Service protection.
+*   [**Try Android | Ios | web Demo**](https://htmlpreview.github.io/?https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/demo.html) - See Foreground Service protection.
 ---
 
 ## Why bottom_navigation_animated_notch_bar?
