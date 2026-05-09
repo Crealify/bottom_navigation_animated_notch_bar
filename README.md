@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/assets/bottom_navigation_animated_notch_bar.png" width="200" alt="Animated Notch Bar Logo">
+<img src="https://raw.githubusercontent.com/Crealify/bottom_navigation_animated_notch_bar/refs/heads/Crealify/assets/bottom_navigation_animated_notch_bar.png" width="240" alt="Animated Notch Bar Logo">
 
 # bottom_navigation_animated_notch_bar
 
@@ -18,7 +18,7 @@
 ## Live Action: Smooth, Dynamic Navigation
 A fluid, modern navigation experience to keep your users engaged. 
 
-![Animated Notch Bar Full Demo](https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/bottom_navigation_animated_notch_bar.gif)
+![Animated Notch Bar Full Demo](https://raw.githubusercontent.com/Crealify/bottom_navigation_animated_notch_bar/refs/heads/Crealify/doc/bottom_navigation_animated_notch_bar.gif)
 
 ### Try the Interactive Demos:
 *   [**Try Android | Ios | web Demo**](https://htmlpreview.github.io/?https://github.com/Crealify/bottom_navigation_animated_notch_bar/blob/Crealify/doc/demo.html) - See Foreground Service protection.
