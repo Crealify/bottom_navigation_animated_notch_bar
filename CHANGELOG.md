@@ -1,3 +1,9 @@
+## 1.0.2
+* **Performance Optimization**: Rewrote `NotchPainter` to use a single continuous path, significantly reducing rendering overhead.
+* **Repaint Isolation**: Added `RepaintBoundary` to the floating icon to isolate animations from the rest of the UI.
+* **Modern SDK Support**: Updated to Flutter 3.24.0 and migrated to the `withValues()` API for colors.
+* **Smoother UX**: Replaced static transitions with `AnimatedOpacity` for tab icons and labels.
+
 ## 1.0.1
 
 * Updated package logo and demo GIF in README.

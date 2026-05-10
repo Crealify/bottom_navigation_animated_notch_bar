@@ -1,7 +1,7 @@
 name: example
 description: "Demonstrates how to use the bottom_navigation_animated_notch_bar plugin."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.2
 
 environment:
   sdk: ^3.2.0

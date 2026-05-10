@@ -1,0 +1,7 @@
+# Exclude large media files to keep package size small for pub.dev
+assets/
+doc/*.gif
+doc/*.png
+playstore.png
+appstore.png
+*.mp4

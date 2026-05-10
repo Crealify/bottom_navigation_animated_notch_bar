@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// A custom painter that draws the background bar with the cutout notch.
+/// A custom painter that draws the background bar with a cutout notch.
+/// Optimized to use a single continuous path for better performance.
 class NotchPainter extends CustomPainter {
   final double notchRadius;
   final double notchPosition;
@@ -9,7 +10,7 @@ class NotchPainter extends CustomPainter {
   final bool showBottomRadius;
   final double elevation;
 
-  NotchPainter({
+  const NotchPainter({
     required this.notchRadius,
     required this.notchPosition,
     required this.color,
@@ -24,29 +25,27 @@ class NotchPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
 
-    // 1. Create a perfect Rounded Rect for the base bar
-    final barPath = Path()
-      ..addRRect(RRect.fromLTRBAndCorners(
-        0,
-        0,
-        size.width,
-        size.height,
-        topLeft: Radius.circular(showTopRadius ? 20 : 0),
-        topRight: Radius.circular(showTopRadius ? 20 : 0),
-        bottomLeft: Radius.circular(showBottomRadius ? 20 : 0),
-        bottomRight: Radius.circular(showBottomRadius ? 20 : 0),
-      ));
-
-    // 2. Create the Notch Cutout Path
-    final notchPath = Path();
+    // Use a single continuous path to avoid expensive Path.combine operations
+    final path = Path();
+    const double cornerRadius = 20.0;
     final double notchWidth = notchRadius * 3.5;
-    final double startNotch = notchPosition - notchWidth / 2;
-    final double endNotch = notchPosition + notchWidth / 2;
+    final double halfNotchWidth = notchWidth / 2;
+    final double startNotch = notchPosition - halfNotchWidth;
+    final double endNotch = notchPosition + halfNotchWidth;
 
-    notchPath.moveTo(startNotch, -1); // Start slightly above to ensure clean cut
-    notchPath.lineTo(startNotch, 0);
+    // Start from top-left corner
+    if (showTopRadius) {
+      path.moveTo(0, cornerRadius);
+      path.quadraticBezierTo(0, 0, cornerRadius, 0);
+    } else {
+      path.moveTo(0, 0);
+    }
 
-    notchPath.cubicTo(
+    // Line to start of notch
+    path.lineTo(startNotch, 0);
+
+    // Notch curve (smooth cutout)
+    path.cubicTo(
       startNotch + notchWidth * 0.2,
       0,
       notchPosition - notchRadius * 0.8,
@@ -54,7 +53,7 @@ class NotchPainter extends CustomPainter {
       notchPosition,
       notchRadius * 1.2,
     );
-    notchPath.cubicTo(
+    path.cubicTo(
       notchPosition + notchRadius * 0.8,
       notchRadius * 1.2,
       endNotch - notchWidth * 0.2,
@@ -62,23 +61,49 @@ class NotchPainter extends CustomPainter {
       endNotch,
       0,
     );
-    notchPath.lineTo(endNotch, -1);
-    notchPath.close();
 
-    // 3. Subtract Notch from Bar
-    final finalPath = Path.combine(PathOperation.difference, barPath, notchPath);
-
-    if (elevation > 0) {
-      canvas.drawShadow(finalPath, Colors.black.withValues(alpha: 0.5), elevation, true);
+    // Line to top-right corner
+    if (showTopRadius) {
+      path.lineTo(size.width - cornerRadius, 0);
+      path.quadraticBezierTo(size.width, 0, size.width, cornerRadius);
+    } else {
+      path.lineTo(size.width, 0);
     }
 
-    canvas.drawPath(finalPath, paint);
+    // Line to bottom-right corner
+    if (showBottomRadius) {
+      path.lineTo(size.width, size.height - cornerRadius);
+      path.quadraticBezierTo(
+          size.width, size.height, size.width - cornerRadius, size.height);
+    } else {
+      path.lineTo(size.width, size.height);
+    }
+
+    // Line to bottom-left corner
+    if (showBottomRadius) {
+      path.lineTo(cornerRadius, size.height);
+      path.quadraticBezierTo(0, size.height, 0, size.height - cornerRadius);
+    } else {
+      path.lineTo(0, size.height);
+    }
+
+    path.close();
+
+    // Draw shadow if needed
+    if (elevation > 0) {
+      canvas.drawShadow(
+          path, Colors.black.withValues(alpha: 0.5), elevation, true);
+    }
+
+    canvas.drawPath(path, paint);
   }
 
   @override
   bool shouldRepaint(covariant NotchPainter oldDelegate) {
     return oldDelegate.notchPosition != notchPosition ||
         oldDelegate.color != color ||
-        oldDelegate.notchRadius != notchRadius;
+        oldDelegate.notchRadius != notchRadius ||
+        oldDelegate.showTopRadius != showTopRadius ||
+        oldDelegate.showBottomRadius != showBottomRadius;
   }
 }

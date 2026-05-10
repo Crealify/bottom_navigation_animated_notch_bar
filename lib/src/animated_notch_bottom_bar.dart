@@ -7,6 +7,7 @@ import 'notch_bottom_bar_controller.dart';
 import 'notch_painter.dart';
 
 /// A custom, animated, notch bottom navigation bar widget.
+/// Optimized for performance with isolated repaints and efficient path logic.
 class AnimatedNotchBottomBar extends StatefulWidget {
   final NotchBottomBarController notchBottomBarController;
   final List<BottomBarItem> bottomBarItems;
@@ -120,8 +121,9 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
         final double margin = widget.removeMargins
             ? 0
             : (isExtremeNarrow ? 4.0 : (isNarrow ? 10.0 : 20.0));
-        final double barWidth = width - (margin * 2);
-        final double itemWidth = barWidth / widget.bottomBarItems.length;
+        final double barWidth = width - (margin * margin > 0 ? margin * 2 : 0);
+        final double effectiveBarWidth = barWidth > 0 ? barWidth : width;
+        final double itemWidth = effectiveBarWidth / widget.bottomBarItems.length;
 
         final double notchRadius =
             isExtremeNarrow ? 20.0 : (isNarrow ? 26.0 : 34.0);
@@ -143,11 +145,12 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
           child: Stack(
             clipBehavior: Clip.none,
             children: [
+              // 1. Background Bar with Animated Notch
               AnimatedBuilder(
                 animation: _animation,
                 builder: (context, _) {
                   return CustomPaint(
-                    size: Size(barWidth, widget.bottomBarHeight),
+                    size: Size(effectiveBarWidth, widget.bottomBarHeight),
                     painter: NotchPainter(
                       notchRadius: notchRadius,
                       notchPosition:
@@ -178,23 +181,14 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
                             ),
                           )
                         : SizedBox(
-                            child: Container(
-                              height: widget.bottomBarHeight,
-                              width: barWidth,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  top: BorderSide(
-                                    color: Colors.white.withValues(alpha: 0.05),
-                                    width: 0.5,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            height: widget.bottomBarHeight,
+                            width: effectiveBarWidth,
                           ),
                   );
                 },
               ),
 
+              // 2. Floating Active Icon (Isolated with RepaintBoundary)
               AnimatedBuilder(
                 animation: _animation,
                 builder: (context, child) {
@@ -203,54 +197,61 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
                         (itemWidth / 2) -
                         circleRadius,
                     top: isExtremeNarrow ? -12 : (isNarrow ? -18 : -25),
-                    child: const SizedBox().animate(
-                      key: ValueKey('active_icon_$_currentIndex'),
-                      onPlay: (controller) => controller.repeat(reverse: true),
-                    ).custom(
-                      duration: const Duration(seconds: 1),
-                      curve: Curves.easeInOut,
-                      builder: (context, value, _) {
-                        final animatedColor = Color.lerp(
-                            widget.activeIconColor, Colors.white, value)!;
-                        return Container(
-                          width: notchSize,
-                          height: notchSize,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: widget.notchColor,
-                            border: Border.all(
-                              color: animatedColor.withValues(alpha: 0.8),
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              if (widget.showShadow)
-                                BoxShadow(
-                                  color: animatedColor.withValues(alpha: 0.4),
-                                  blurRadius: 15,
-                                  spreadRadius: 2,
+                    child: RepaintBoundary(
+                      child: const SizedBox()
+                          .animate(
+                            key: ValueKey('active_icon_$_currentIndex'),
+                            onPlay: (controller) =>
+                                controller.repeat(reverse: true),
+                          )
+                          .custom(
+                            duration: const Duration(seconds: 1),
+                            curve: Curves.easeInOut,
+                            builder: (context, value, _) {
+                              final animatedColor = Color.lerp(
+                                  widget.activeIconColor, Colors.white, value)!;
+                              return Container(
+                                width: notchSize,
+                                height: notchSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: widget.notchColor,
+                                  border: Border.all(
+                                    color: animatedColor.withValues(alpha: 0.8),
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    if (widget.showShadow)
+                                      BoxShadow(
+                                        color: animatedColor.withValues(alpha: 0.4),
+                                        blurRadius: 15,
+                                        spreadRadius: 2,
+                                      ),
+                                  ],
                                 ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Transform.scale(
-                              scale: 1.0 + (value * 0.1),
-                              child: IconTheme(
-                                data: IconThemeData(
-                                  size: floatingIconSize,
-                                  color: animatedColor,
+                                child: Center(
+                                  child: Transform.scale(
+                                    scale: 1.0 + (value * 0.1),
+                                    child: IconTheme(
+                                      data: IconThemeData(
+                                        size: floatingIconSize,
+                                        color: animatedColor,
+                                      ),
+                                      child: widget
+                                          .bottomBarItems[_currentIndex]
+                                          .activeItem,
+                                    ),
+                                  ),
                                 ),
-                                child: widget.bottomBarItems[_currentIndex]
-                                    .activeItem,
-                              ),
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
                     ),
                   );
                 },
               ),
 
+              // 3. Static Bottom Bar Items
               SizedBox(
                 height: widget.bottomBarHeight,
                 child: Row(
@@ -261,54 +262,50 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
 
                     return Expanded(
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           widget.onTap(index);
                           widget.notchBottomBarController.jumpTo(index);
                         },
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Opacity(
-                                    opacity: isActive ? 0 : 1,
-                                    child: IconTheme(
-                                      data: IconThemeData(
-                                          size: isExtremeNarrow
-                                              ? 16
-                                              : (isNarrow ? 20 : 24)),
-                                      child: item.inActiveItem,
-                                    ),
-                                  ),
-                                  if (widget.showLabel &&
-                                      item.itemLabel != null &&
-                                      !isUltraNarrow)
-                                    Opacity(
-                                      opacity: isActive ? 0 : 1,
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 2.0),
-                                        child: Text(
-                                          item.itemLabel!,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: widget.itemLabelStyle ??
-                                              const TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 11,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedOpacity(
+                              duration: const Duration(milliseconds: 200),
+                              opacity: isActive ? 0 : 1,
+                              child: IconTheme(
+                                data: IconThemeData(
+                                  size: isExtremeNarrow
+                                      ? 16
+                                      : (isNarrow ? 20 : 24),
+                                  color: Colors.grey,
+                                ),
+                                child: item.inActiveItem,
                               ),
                             ),
-                          ),
+                            if (widget.showLabel &&
+                                item.itemLabel != null &&
+                                !isUltraNarrow)
+                              AnimatedOpacity(
+                                duration: const Duration(milliseconds: 200),
+                                opacity: isActive ? 0 : 1,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 2.0),
+                                  child: Text(
+                                    item.itemLabel!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: widget.itemLabelStyle ??
+                                        const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 11,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     );
