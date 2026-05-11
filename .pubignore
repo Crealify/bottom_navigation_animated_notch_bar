@@ -1,5 +1,5 @@
 # Exclude large media files to keep package size small for pub.dev
-assets/
+# assets/ (Removed to allow screenshots)
 doc/*.gif
 doc/*.png
 playstore.png

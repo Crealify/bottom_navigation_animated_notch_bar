@@ -9,26 +9,67 @@ import 'notch_painter.dart';
 /// A custom, animated, notch bottom navigation bar widget.
 /// Optimized for performance with isolated repaints and efficient path logic.
 class AnimatedNotchBottomBar extends StatefulWidget {
+  /// Controller to handle the state and animation of the bar.
   final NotchBottomBarController notchBottomBarController;
+
+  /// List of items to display in the navigation bar (2-5 items).
   final List<BottomBarItem> bottomBarItems;
+
+  /// Callback function triggered when an item is tapped.
   final Function(int) onTap;
+
+  /// Background color of the navigation bar.
   final Color color;
+
+  /// Whether to remove the default horizontal margins.
   final bool removeMargins;
+
+  /// Optional fixed width for the bar.
   final double? bottomBarWidth;
+
+  /// Height of the navigation bar (default is 75.0).
   final double bottomBarHeight;
+
+  /// Duration of the notch movement animation.
   final int durationInMilliSeconds;
+
+  /// Whether to show text labels below the icons.
   final bool showLabel;
+
+  /// Style for the item labels.
   final TextStyle? itemLabelStyle;
+
+  /// Whether to show a shadow below the bar.
   final bool showShadow;
+
+  /// Whether to apply a blur (glassmorphism) effect to the bar.
   final bool showBlurBottomBar;
+
+  /// Opacity of the blur effect background.
   final double blurOpacity;
+
+  /// Horizontal blur sigma value.
   final double blurFilterX;
+
+  /// Vertical blur sigma value.
   final double blurFilterY;
+
+  /// Color of the circular notch.
   final Color notchColor;
+
+  /// Optional gradient for the circular notch.
   final Gradient? notchGradient;
+
+  /// Whether to show rounded corners at the top of the bar.
   final bool showTopRadius;
+
+  /// Whether to show rounded corners at the bottom of the bar.
   final bool showBottomRadius;
+
+  /// Elevation value for the shadow.
   final double elevation;
+
+  /// Color for the active icon and its glow effect.
   final Color activeIconColor;
 
   const AnimatedNotchBottomBar({
