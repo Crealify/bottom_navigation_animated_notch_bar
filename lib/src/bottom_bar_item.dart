@@ -11,10 +11,14 @@ class BottomBarItem {
   /// An optional label to display below the icon.
   final String? itemLabel;
 
+  /// Optional active color for this specific item (overrides the global activeIconColor).
+  final Color? activeColor;
+
   /// Creates a [BottomBarItem].
   const BottomBarItem({
     required this.inActiveItem,
     required this.activeItem,
     this.itemLabel,
+    this.activeColor,
   });
 }

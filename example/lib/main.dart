@@ -23,10 +23,24 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Notch Bar Demo',
       debugShowCheckedModeBanner: false,
+      color: AppConstants.bgColor,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        scrollbars: false,
+      ),
+      builder: (context, child) {
+        return Container(
+          color: AppConstants.bgColor,
+          child: child,
+        );
+      },
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: AppConstants.bgColor,
+        canvasColor: AppConstants.bgColor,
         primaryColor: AppConstants.primaryColor,
-        colorScheme: const ColorScheme.dark(primary: AppConstants.primaryColor),
+        colorScheme: const ColorScheme.dark(
+          primary: AppConstants.primaryColor,
+          surface: AppConstants.bgColor,
+        ),
       ),
       home: const MainViewWrapper(),
     );
@@ -49,6 +63,10 @@ class AppConstants {
 
 class AppController extends GetxController {
   final scrollController = ScrollController();
+  // A ValueNotifier that holds the current scroll offset.
+  // Only the ListView attaches to scrollController; everything else reads this notifier.
+  final scrollOffset = ValueNotifier<double>(0.0);
+
   // Using the controller from the package
   final notchBottomBarController = NotchBottomBarController(index: 0);
   
@@ -61,6 +79,26 @@ class AppController extends GetxController {
   static final section3Key = GlobalKey();
   static final section4Key = GlobalKey();
   static final section5Key = GlobalKey();
+
+  @override
+  void onInit() {
+    super.onInit();
+    scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (scrollController.hasClients && scrollController.positions.length == 1) {
+      scrollOffset.value = scrollController.offset;
+    }
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    scrollOffset.dispose();
+    super.onClose();
+  }
 
   void scrollToTop() {
     if (scrollController.hasClients) {
@@ -147,7 +185,31 @@ class FeaturedVideos extends StatelessWidget { const FeaturedVideos({super.key})
 class ShortsVibes extends StatelessWidget { const ShortsVibes({super.key}); @override Widget build(BuildContext context) => const SizedBox.shrink(); }
 class CollegeMemories extends StatelessWidget { const CollegeMemories({super.key}); @override Widget build(BuildContext context) => const SizedBox.shrink(); }
 class PortfolioEnding extends StatelessWidget { const PortfolioEnding({super.key}); @override Widget build(BuildContext context) => const _PlaceholderPage("End of Content", Colors.deepPurple); }
-class NavigationButtonList extends StatelessWidget { const NavigationButtonList({super.key}); @override Widget build(BuildContext context) => Row(children: [TextButton(onPressed: () => appController.scrollToSection(AppController.section1Key), child: const Text("Home", style: TextStyle(color: Colors.white))), TextButton(onPressed: () => appController.scrollToSection(AppController.section2Key), child: const Text("Search", style: TextStyle(color: Colors.white)))]); }
+class NavigationButtonList extends StatelessWidget {
+  const NavigationButtonList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextButton(onPressed: () => appController.scrollToSection(AppController.section1Key), child: const Text("Home", style: TextStyle(color: Colors.white))),
+          const SizedBox(width: 4),
+          TextButton(onPressed: () => appController.scrollToSection(AppController.section2Key), child: const Text("Search", style: TextStyle(color: Colors.white))),
+          const SizedBox(width: 4),
+          TextButton(onPressed: () => appController.scrollToSection(AppController.section3Key), child: const Text("Favorites", style: TextStyle(color: Colors.white))),
+          const SizedBox(width: 4),
+          TextButton(onPressed: () => appController.scrollToSection(AppController.section4Key), child: const Text("Settings", style: TextStyle(color: Colors.white))),
+          const SizedBox(width: 4),
+          TextButton(onPressed: () => appController.scrollToSection(AppController.section5Key), child: const Text("Profile", style: TextStyle(color: Colors.white))),
+        ],
+      ),
+    );
+  }
+}
 
 // =============================================================================
 // 5. TOP NAVIGATION BAR (For Desktop)
@@ -171,12 +233,9 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
     return Obx(() {
       final bool isMenuOpen = appController.isMenuOpen.value;
 
-      return AnimatedBuilder(
-        animation: appController.scrollController,
-        builder: (context, child) {
-          final double offset = appController.scrollController.hasClients
-              ? appController.scrollController.offset
-              : 0;
+      return ValueListenableBuilder<double>(
+        valueListenable: appController.scrollOffset,
+        builder: (context, offset, child) {
 
           final bool isScrolled = offset > 50;
           final double glassOpacity = isScrolled ? 0.65 : 0.2;
@@ -194,7 +253,10 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
                   left: isMenuOpen ? 12.0 : AppConstants.spacing24,
                   right: isMenuOpen ? 12.0 : AppConstants.spacing24),
               height: 72,
-              constraints: BoxConstraints(maxWidth: isMenuOpen ? 1100 : 1200),
+              constraints: BoxConstraints(
+                maxWidth: isMenuOpen ? 1100 : 1200,
+                minWidth: 120,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
@@ -234,37 +296,53 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
                         ],
                       ),
                     ),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _buildLogo(),
-
-                        if (showFullNav)
-                          const Expanded(
-                            child: Center(child: NavigationButtonList()),
+                    // Stack layout: logo left | nav center | actions right
+                    // No flex children = no unbounded constraint errors at any width.
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: showFullNav ? horizontalPadding : 12.0),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Center: nav buttons (desktop only)
+                          if (showFullNav)
+                            const Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: NavigationButtonList(),
+                            ),
                           ),
 
-                        if (!showFullNav) const Spacer(),
+                        // Left: logo
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(child: _buildLogo()),
+                        ),
 
-                        Flexible(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerRight,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildAdminButton(),
-                                const SizedBox(width: 8),
-                                _buildHireMeButton(context),
-                              ],
+                        // Right: admin + hire me
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildAdminButton(),
+                                  const SizedBox(width: 8),
+                                  _buildHireMeButton(context),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
+                    ),  // close Padding
                   ),
                 ),
               ),
@@ -274,6 +352,7 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
       );
     });
   }
+
 
   Widget _buildLogo() {
     return MouseRegion(
@@ -427,9 +506,11 @@ class MainView extends StatelessWidget {
     final bool isDesktop = Responsive.isDesktop(context);
     final bool isLarge = Responsive.isExtraLargeScreen(context);
 
-    return Scaffold(
-      backgroundColor: AppConstants.bgColor,
-      drawer: isDesktop ? null : const CustomDrawer(),
+    return Container(
+      color: AppConstants.bgColor,
+      child: Scaffold(
+        backgroundColor: AppConstants.bgColor,
+        drawer: isDesktop ? null : const CustomDrawer(),
       body: Row(
         children: [
           if (isDesktop)
@@ -465,7 +546,7 @@ class MainView extends StatelessWidget {
                   curve: Curves.easeInOutCubic,
                   margin: appController.isMenuOpen.value
                       ? const EdgeInsets.only(
-                          top: 0, left: 12, right: 12, bottom: 12)
+                          top: 0, left: 12, right: 12, bottom: 0)
                       : EdgeInsets.zero,
                   decoration: BoxDecoration(
                     color: AppConstants.bgColor,
@@ -602,19 +683,21 @@ class MainView extends StatelessWidget {
                                     : const Offset(0, 1.5),
                                 child: MediaQuery.removePadding(
                                   context: context,
-                                  removeBottom: true,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.85),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.3),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, -2),
-                                        ),
-                                      ],
-                                    ),
-                                    // THIS IS THE PACKAGE WIDGET:
+                                  removeBottom: false, // Keep bottom padding for safe area
+                                  child: SafeArea(
+                                    top: false,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.85),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.3),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, -2),
+                                          ),
+                                        ],
+                                      ),
+                                      // THIS IS THE PACKAGE WIDGET:
                                     child: AnimatedNotchBottomBar(
                                       notchBottomBarController:
                                           appController.notchBottomBarController,
@@ -631,30 +714,35 @@ class MainView extends StatelessWidget {
                                               color: Colors.white60),
                                           activeItem: Icon(Icons.home_filled),
                                           itemLabel: 'Home',
+                                          activeColor: Color(0xFF00E5FF), // Cyan
                                         ),
                                         BottomBarItem(
                                           inActiveItem: Icon(Icons.search_outlined,
                                               color: Colors.white60),
                                           activeItem: Icon(Icons.search),
                                           itemLabel: 'Search',
+                                          activeColor: Color(0xFF00FF7F), // Spring Green
                                         ),
                                         BottomBarItem(
                                           inActiveItem: Icon(Icons.favorite_outline,
                                               color: Colors.white60),
                                           activeItem: Icon(Icons.favorite),
                                           itemLabel: 'Favorites',
+                                          activeColor: Color(0xFFFF3366), // Pink/Red
                                         ),
                                         BottomBarItem(
                                           inActiveItem: Icon(Icons.settings_outlined,
                                               color: Colors.white60),
                                           activeItem: Icon(Icons.settings),
                                           itemLabel: 'Settings',
+                                          activeColor: Color(0xFFFFD700), // Gold
                                         ),
                                         BottomBarItem(
                                           inActiveItem: Icon(Icons.person_outline,
                                               color: Colors.white60),
                                           activeItem: Icon(Icons.person),
                                           itemLabel: 'Profile',
+                                          activeColor: Color(0xFF9D00FF), // Purple
                                         ),
                                       ],
                                       onTap: (index) {
@@ -686,9 +774,10 @@ class MainView extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              );
-                            }),
-                          ),
+                              ),
+                            );
+                          }),
+                        ),
                         
                         Positioned(
                           bottom: isDesktop ? 40 : 60,
@@ -745,8 +834,9 @@ class MainView extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSection(GlobalKey key, Widget child) {
     return SizedBox(key: key, child: child);
@@ -851,9 +941,9 @@ class _DynamicSectionState extends State<_DynamicSection> {
         }
       },
       child: RepaintBoundary(
-        child: AnimatedBuilder(
-          animation: globalScrollController,
-          builder: (context, child) {
+        child: ValueListenableBuilder<double>(
+          valueListenable: appController.scrollOffset,
+          builder: (context, scrollOffsetValue, child) {
             double tiltAngle = 0.0;
             double scale = 1.0;
 
@@ -913,3 +1003,4 @@ class _DynamicSectionState extends State<_DynamicSection> {
     }
   }
 }
+

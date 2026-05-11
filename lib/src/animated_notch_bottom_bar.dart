@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import 'bottom_bar_item.dart';
@@ -72,6 +73,12 @@ class AnimatedNotchBottomBar extends StatefulWidget {
   /// Color for the active icon and its glow effect.
   final Color activeIconColor;
 
+  /// Enable smart haptic feedback when tapping items (default: true).
+  final bool showHapticFeedback;
+
+  /// Custom curve for the notch animation physics (default: Curves.easeOutBack).
+  final Curve notchAnimationCurve;
+
   const AnimatedNotchBottomBar({
     super.key,
     required this.notchBottomBarController,
@@ -95,6 +102,8 @@ class AnimatedNotchBottomBar extends StatefulWidget {
     this.showBottomRadius = true,
     this.elevation = 5.0,
     this.activeIconColor = const Color(0xFF00E5FF),
+    this.showHapticFeedback = true,
+    this.notchAnimationCurve = Curves.easeOutBack,
   }) : assert(bottomBarItems.length > 1 && bottomBarItems.length < 6);
 
   @override
@@ -106,11 +115,15 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
   late AnimationController _animationController;
   late Animation<double> _animation;
   int _currentIndex = 0;
+  late Color _previousActiveColor;
+  late Color _currentActiveColor;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.notchBottomBarController.index;
+    _currentActiveColor = widget.bottomBarItems[_currentIndex].activeColor ?? widget.activeIconColor;
+    _previousActiveColor = _currentActiveColor;
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: widget.durationInMilliSeconds),
@@ -133,11 +146,24 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
   }
 
   void _moveNotch(int index) {
+    if (widget.showHapticFeedback) {
+      HapticFeedback.lightImpact();
+    }
+    
+    _previousActiveColor = _currentActiveColor;
+    _currentActiveColor = widget.bottomBarItems[index].activeColor ?? widget.activeIconColor;
+
     _animation = _animationController.drive(
       Tween<double>(begin: _animation.value, end: index.toDouble())
-          .chain(CurveTween(curve: Curves.easeOutCubic)),
+          .chain(CurveTween(curve: widget.notchAnimationCurve)),
     );
-    _animationController.forward(from: 0.0);
+    
+    _animationController.forward(from: 0.0).then((_) {
+      if (widget.showHapticFeedback && mounted) {
+        HapticFeedback.selectionClick();
+      }
+    });
+    
     setState(() {
       _currentIndex = index;
     });
@@ -233,6 +259,12 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
               AnimatedBuilder(
                 animation: _animation,
                 builder: (context, child) {
+                  final Color slideColor = Color.lerp(
+                    _previousActiveColor,
+                    _currentActiveColor,
+                    _animationController.value,
+                  )!;
+
                   return Positioned(
                     left: (_animation.value * itemWidth) +
                         (itemWidth / 2) -
@@ -250,7 +282,7 @@ class _AnimatedNotchBottomBarState extends State<AnimatedNotchBottomBar>
                             curve: Curves.easeInOut,
                             builder: (context, value, _) {
                               final animatedColor = Color.lerp(
-                                  widget.activeIconColor, Colors.white, value)!;
+                                  slideColor, Colors.white, value)!;
                               return Container(
                                 width: notchSize,
                                 height: notchSize,

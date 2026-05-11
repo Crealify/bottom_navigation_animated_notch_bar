@@ -1,3 +1,11 @@
+## 1.1.0
+* **Futuristic "Liquid" Spring Physics**: Upgraded default notch sliding animation to a beautiful, bouncy `Curves.easeOutBack` physics curve. Developers can now customize the physics via the `notchAnimationCurve` property.
+* **Dynamic Color Morphing (Material You)**: Added `activeColor` support to `BottomBarItem`. The floating icon and glow will now seamlessly and dynamically morph between colors while sliding between tabs.
+* **Built-in Smart Haptics**: Added native `HapticFeedback`. The bar provides a light tap when moving and a satisfying "thud" when the notch lands. Configurable via `showHapticFeedback` (pure Dart, no external dependencies).
+
+## 1.0.3
+* Updated README.md documentation to clearly outline package installation and benefits.
+
 ## 1.0.2
 * **Performance Optimization**: Rewrote `NotchPainter` to use a single continuous path, significantly reducing rendering overhead.
 * **Repaint Isolation**: Added `RepaintBoundary` to the floating icon to isolate animations from the rest of the UI.
