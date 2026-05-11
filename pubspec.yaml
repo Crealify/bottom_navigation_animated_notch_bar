@@ -1,6 +1,6 @@
 name: bottom_navigation_animated_notch_bar
 description: "A uniquely designed, highly customizable animated notch bottom navigation bar for Flutter with smooth transitions and glassmorphism support."
-version: 1.0.2
+version: 1.0.3
 homepage: "https://github.com/crealify/bottom_navigation_animated_notch_bar"
 repository: "https://github.com/crealify/bottom_navigation_animated_notch_bar"
 issue_tracker: "https://github.com/crealify/bottom_navigation_animated_notch_bar/issues"
